@@ -125,21 +125,6 @@ namespace game_test
                 Hero.Velocity = new Vector2(Hero.Velocity.X * friction, Hero.Velocity.Y); // 如果没有按下A或D键，则应用摩擦力减小水平速度
             }
         }*/
-        void Gravity_character()//重力作用于角色
-        {
-            Vector2 velocity = new Vector2(0, 0);
-            if (Hero.Position.Y < this.ClientSize.Height - Character.Height - 15)//只有角色未触底时才应用重力
-            {
-                velocity.Y += gravity;
-                Hero.Velocity += velocity;
-                Hero.Position += Hero.Velocity;
-            }
-            else//使角色触底时一直保持在地面上
-            {
-                Hero.Position = new Vector2(Hero.Position.X, this.ClientSize.Height - Character.Height - 15);
-                Hero.Velocity = new Vector2(Hero.Velocity.X, 0);//落地时将垂直速度归零
-            }
-        }
         int loop_time = 0;
         void Draw_character()
         {
