@@ -1,2 +1,4 @@
 # game_test
-100%winform-based game
+建议使用net10以上运行时
+这是我的第一个游戏，同时也是纯用C#winform开发的一款2D游戏。
+希望大佬们多多支持，给我一些建议和意见。
