@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using game_test.Character_file;
+using game_test.Item;
+using System.Numerics;
 namespace game_test.State_machine_floder
 {
     /// <summary>

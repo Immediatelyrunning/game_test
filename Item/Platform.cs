@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace game_test
+namespace game_test.Item
 {
     public class Platform
     {

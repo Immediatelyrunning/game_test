@@ -1,6 +1,7 @@
-﻿using game_test.State_machine_floder;
+﻿using game_test.Item;
+using game_test.State_machine_floder;
 using System.Numerics;
-namespace game_test
+namespace game_test.Character_file
 {
     public class Character
     {
@@ -8,7 +9,7 @@ namespace game_test
         /// <summary>
         /// 摩擦乘数每帧结算到速度上，值越小摩擦力越大，范围0-1
         /// </summary>
-        public float friction = 0.8f;
+        public float friction = 0.7f;
         public float acceleration = 7f; // 加速度，值越大角色加速越快
         public float gravity = 1.5f;//重力加速度
         public Play form { get; set; }//角色所在的窗体
@@ -32,7 +33,9 @@ namespace game_test
                 return field.Collider_moved(Position);
             }
         } = new Collider(new Vector2(0, 0), Width, Height);
-
+        /// <summary>
+        /// 这是角色的速度，X轴为水平速度，Y轴为垂直速度
+        /// </summary>
         public Vector2 Velocity { get; set; } = new Vector2(0, 0);//角色速度
         public float Max_speed { get; } = 25;//角色最大移动速度
         public int Experience_to_get_up => 100 + (Level * 50);//角色升级所需经验值

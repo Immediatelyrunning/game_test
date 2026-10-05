@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace game_test
+namespace game_test.divice_manager
 {
     /// <summary>
     /// 检测键盘按键状态的辅助类

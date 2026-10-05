@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using game_test.divice_manager;
+using System.Numerics;
 namespace game_test.State_machine_floder
 {
     internal class Move_state : State
@@ -25,25 +26,25 @@ namespace game_test.State_machine_floder
             Vector2 velocity = new Vector2(0, 0);
             if (Key_input.Is_key_donw(Keys.D))
             {
-                velocity.X += Hero.acceleration;
                 if (Math.Abs(Hero.Velocity.X) > Hero.Max_speed)
                 {
-                    Hero.Velocity = new Vector2(Hero.Max_speed, Hero.Velocity.Y);//如果速度超过最大速度，则将速度限制为最大速度
+                    //Hero.Velocity = new Vector2(Hero.Max_speed, Hero.Velocity.Y);//如果速度超过最大速度，则将速度限制为最大速度
                 }
                 else
                 {
+                    velocity.X += Hero.acceleration;
                     Hero.Velocity += velocity;
                 }
             }
             else if (Key_input.Is_key_donw(Keys.A))
             {
-                velocity.X -= Hero.acceleration;
                 if (Math.Abs(Hero.Velocity.X) > Hero.Max_speed)
                 {
-                    Hero.Velocity = new Vector2(-Hero.Max_speed, Hero.Velocity.Y);//如果速度超过最大速度，则将速度限制为最大速度
+                    //Hero.Velocity = new Vector2(-Hero.Max_speed, Hero.Velocity.Y);//如果速度超过最大速度，则将速度限制为最大速度
                 }
                 else
                 {
+                    velocity.X -= Hero.acceleration;
                     Hero.Velocity += velocity;
                 }
             }

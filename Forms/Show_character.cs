@@ -1,4 +1,6 @@
-﻿namespace game_test
+﻿using game_test.Character_file;
+
+namespace game_test
 {
     public partial class Show_character : Form
     {
@@ -29,10 +31,12 @@
                 }
                 else
                 {
-                    label.Text = $"角色 {Hero.Name}\n等级：{Hero.Level}\n生命值：{Hero.Health:F2}/{Hero.Max_health:F2}\n经验值：{Hero.Experience_now}/{Hero.Experience_to_get_up}" +
-                    $"\n坐标({Hero.Position.X},{Hero.Position.Y})"+$"\n碰撞箱坐标({Hero.Collider.Point_left.X},{Hero.Collider.Point_left.Y})"
+                    label.Text =
+                    $"角色 {Hero.Name}\n等级：{Hero.Level}\n生命值：{Hero.Health:F2}/{Hero.Max_health:F2}\n经验值：{Hero.Experience_now}/{Hero.Experience_to_get_up}" +
+                    $"\n坐标({Hero.Position.X:F2},{Hero.Position.Y:F2})"+$"\n碰撞箱坐标({Hero.Collider.Point_left.X:F2},{Hero.Collider.Point_left.Y:F2})"
                     +$"\n周围是否有平台：{Hero.What_platform_around(Hero.form.platforms)!=null}"
-                    +$"\n现在的状态：{Hero.state_machine.current_state.Name}";
+                    +$"\n现在的状态：{Hero.state_machine.current_state.Name}"
+                    +$"\n角色速度：({Hero.Velocity.X:F2},{Hero.Velocity.Y:F2})";
                 }
             };
             timer.Start(); // 开始更新

@@ -1,5 +1,7 @@
-﻿using System.Numerics;
-using System.Runtime.InteropServices;
+﻿using game_test.Character_file;
+using game_test.Item;
+using game_test.Map;
+using System.Numerics;
 namespace game_test
 {
     public partial class Play : Form
@@ -17,6 +19,8 @@ namespace game_test
             Hero = character;
             Hero.form = this;
             InitializeComponent();
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
+         ControlStyles.OptimizedDoubleBuffer, true);
             //Character_test();
         }
         void Out_of_bounds()//防止角色超出边界
@@ -136,7 +140,7 @@ namespace game_test
                 Location = new Point((int)Math.Round(Hero.Position.X), (int)Math.Round(Hero.Position.Y))
             };
             loop_time++;
-            if (loop_time>=1)
+            if (loop_time >= 1)
             {
                 loop_time = 0;
                 this.Controls.RemoveByKey("Hero_body");
@@ -147,10 +151,11 @@ namespace game_test
         void Play_load(object sender, EventArgs e)
         {
             Tips();
-            Create_platform();
-            Draw_platforms();
+            //Create_platform();
             this.Text = $"游戏中 - 角色 {Hero.Name}";
             this.WindowState = FormWindowState.Maximized;
+            platforms = new Map_creator_and_manager(this).Create_map();
+            Draw_platforms();
             Timer = new System.Windows.Forms.Timer();
             Timer.Interval = 1000 / 60; // 每秒60帧
             Timer.Tick += Timer_Tick;

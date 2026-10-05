@@ -1,3 +1,5 @@
+using game_test.Character_file;
+
 namespace game_test
 {
     public partial class Main_form : Form

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace game_test
+namespace game_test.Item
 {
     ///<summary>
     ///此单独类为碰撞箱类，我应该在这里加一个bool值来表示物体是否发生了碰撞
@@ -10,7 +10,7 @@ namespace game_test
     {
         float width_lenth;//获得宽度
         float height_lenth;//获得高度
-        public float friction = 0.85f; // 摩擦系数，值越小摩擦力越大
+        public float friction = 0.80f; // 摩擦系数，值越小摩擦力越大
         public Vector2 Point_left;//左上角坐标,一般在角色左上角
         public Vector2 Point_right;//右下角坐标，
         public float left => Point_right.Y - Point_left.Y;
