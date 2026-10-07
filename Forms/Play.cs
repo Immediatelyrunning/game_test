@@ -6,14 +6,15 @@ namespace game_test
 {
     public partial class Play : Form
     {
+        internal Map_creator_and_manager map_creator_and_manager;
         bool Is_paltform_around = false;//是否平台在角色周围
         Platform platform_around => Hero.What_platform_around(platforms);//周围的平台
         //float friction = 0.8f; // 摩擦系数，值越小摩擦力越大
         //float acceleration = 7f; // 加速度，值越大角色加速越快
         //float gravity = 1.5f;//重力加速度
-        Character Hero { get; set; }
+        public Character Hero;
         System.Windows.Forms.Timer Timer { get; set; }//游戏循环计时器
-        public List<Platform> platforms = new List<Platform>();//储存生成的平台
+        public List<Platform> platforms;
         public Play(Character character)
         {
             Hero = character;
@@ -21,6 +22,16 @@ namespace game_test
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
          ControlStyles.OptimizedDoubleBuffer, true);
+            //用新线程创建地图生成器和平台，防止界面卡顿
+            Load_started += (sender, e) =>
+            {
+                //MessageBox.Show("地图生成中...");
+                map_creator_and_manager = new Map_creator_and_manager(this);
+                map_creator_and_manager.Create_blocks();
+                platforms = map_creator_and_manager.Get_where_block(Hero.Position).platforms;
+                //MessageBox.Show($"是否正确生成区块{map_creator_and_manager.Get_where_block(Hero.Position)!=null}");
+                //MessageBox.Show($"是否有平台{platforms!=null}");
+            };
             //Character_test();
         }
         void Out_of_bounds()//防止角色超出边界
@@ -148,19 +159,24 @@ namespace game_test
             this.Controls.Add(body);
         }
         public static EventHandler Load_finished;
+        public static EventHandler Load_started;
         void Play_load(object sender, EventArgs e)
         {
-            Tips();
+            //Tips();
             //Create_platform();
             this.Text = $"游戏中 - 角色 {Hero.Name}";
             this.WindowState = FormWindowState.Maximized;
-            platforms = new Map_creator_and_manager(this).Create_map();
-            Draw_platforms();
+
+            Load_started?.Invoke(this, EventArgs.Empty);//触发加载开始事件
+
             Timer = new System.Windows.Forms.Timer();
             Timer.Interval = 1000 / 60; // 每秒60帧
             Timer.Tick += Timer_Tick;
             Timer.Start();
-            Load_finished?.Invoke(this, EventArgs.Empty);
+
+            Load_finished?.Invoke(this, EventArgs.Empty);//触发加载完成事件
+
+            Draw_platforms();
         }
         void Tips()
         {

@@ -1,4 +1,4 @@
-﻿using game_test.Item;
+﻿using System.Drawing.Drawing2D;
 using System.Numerics;
 namespace game_test.Map
 {
@@ -7,11 +7,8 @@ namespace game_test.Map
     /// </summary>
     internal class Map_creator_and_manager
     {
-        /// <summary>
-        /// 地图尺寸,世界坐标系的参考，奇了怪了winform真的挺难做负坐标
-        /// </summary>
-        SizeF map_size;
-        Form Form;
+        Vector2 Character_position=>Form.Hero.Position;
+        Play Form;
         /// <summary>
         /// 地图宽度
         /// </summary>
@@ -23,9 +20,9 @@ namespace game_test.Map
         /// <summary>
         /// 地图中心,这才是(0,0)参考点
         /// </summary>
-        Vector2 map_center;
+        Vector2 map_center=new(0f,0f);
         int[,] map_data;
-        public Map_creator_and_manager(Form form)
+        public Map_creator_and_manager(Play form)
         {
             Form = form;
         }
@@ -40,6 +37,7 @@ namespace game_test.Map
             map_height_block = height;
             map_data = new int[width, height];
         }
+        /*
         /// <summary>
         /// 暂行地图生成
         /// </summary>
@@ -50,7 +48,7 @@ namespace game_test.Map
             float Window_width = Form.ClientSize.Width; // 平台宽度
             float Window_height = Form.ClientSize.Height; // 平台高度
             int num = (int)(Window_height / 150);//生成平台的数量
-            //MessageBox.Show($"获得的窗口大小{Window_height},{Window_width}");
+            MessageBox.Show($"获得的窗口大小{Window_height},{Window_width}");
             Random random = new();
             for (; num > 0; num--)
             {
@@ -62,8 +60,13 @@ namespace game_test.Map
             }
             return platforms;
         }
-        List<Block> blocks = new List<Block>();
-        public void Create_block()
+        */
+        public static (int X, int Y) Block_index(Vector2 p) => ((int)Math.Floor(p.X / Block.x), (int)Math.Floor(p.Y / Block.y));               
+        /// <summary>
+        /// 区块管理，区块索引
+        /// </summary>
+        public readonly Dictionary<(int x, int y), Block> blocks = new();
+        public void Create_blocks()
         {
             //创建区块
             for (int x = 0; x < map_width_block; x++)
@@ -71,37 +74,45 @@ namespace game_test.Map
                 for (int y = 0; y < map_height_block; y++)
                 {
                     Vector2 point = new Vector2(x * Block.x, y * Block.y);
-                    Size size = new Size(Block.x, Block.y);
-                    Block block = new Block(point);
-                    map_size+=size;
-                    blocks.Add(block);
+                    Vector2 size = new Vector2(Block.x, Block.y);
+                    Block block = new Block(Block_index(point).X,Block_index(point).Y);
+                    blocks.Add(Block_index(point), block);
                 }
             }
-            map_center = new Vector2(map_size.Width / 2, map_size.Height / 2);
-        }
-        /// <summary>
-        /// 将世界坐标转换为以地图中心为参考点的坐标
-        /// </summary>
-        /// <param name="point">角色相对于地图（左上角为0，0）的坐标</param>
-        /// <returns>中心系坐标</returns>
-        public Vector2 Get_point_based_on_center(Vector2 point)
-        {
-            point.X -= map_center.X;
-            point.Y -= map_center.Y;
-            return point;
         }
         /// <summary>
         /// 获取点所在的区块
         /// </summary>
-        /// <param name="point"></param>
+        /// <param name="point">世界坐标</param>
         /// <returns>该点所在的区块</returns>
-        public Block? Get_where_block(Vector2 point)
+        public Block? Get_where_block(Vector2 point) => blocks.TryGetValue(Block_index(point), out var block) ? block : null;
+        /// <summary>
+        /// 获取窗口在世界的位置
+        /// </summary>
+        /// <param name="point">世界坐标</param>
+        /// <param name="matrix_screen">当前矩阵</param>
+        /// <returns>应用了世界坐标的矩阵</returns>
+        public Matrix Get_matrix_world_to_screen(Vector2 point, Matrix matrix_screen)
         {
-            Block block = blocks.Find((block) =>
-            {
-                return point.X >= block.Point_upleft.X && point.X <= block.Point_downright.X && point.Y >= block.Point_upleft.Y && point.Y <= block.Point_downright.Y;
-            });
-            return block;
+            matrix_screen.Reset();
+            matrix_screen.Translate(-point.X + (Form.ClientSize.Width / 2), -point.Y + (Form.ClientSize.Height / 2), MatrixOrder.Append);
+            return matrix_screen;
+        }
+        /// <summary>
+        /// 用于复用的单位点
+        /// </summary>
+        private readonly PointF[] _buf = new PointF[1];
+        /// <summary>
+        /// 把世界坐标转化为屏幕坐标
+        /// </summary>
+        /// <param name="point">世界坐标</param>
+        /// <param name="matrix">转化后的矩阵</param>
+        /// <returns>屏幕坐标</returns>
+        public Vector2 Get_vector_world_to_screen(Vector2 point, Matrix matrix)
+        {
+            _buf[0] = new PointF(point.X, point.Y);
+            matrix.TransformPoints(_buf);          // 用 Points（含平移），别用 Vectors
+            return new Vector2(_buf[0].X, _buf[0].Y);
         }
     }
 }

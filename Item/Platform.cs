@@ -4,12 +4,12 @@ namespace game_test.Item
 {
     public class Platform
     {
-        float width = 300;
-        float height = 20;
+        public static float width = 300;
+        public static float height = 20;
         public Vector2 position;
         public Collider Collider;
-        public Bitmap Platform_body = new Bitmap(300, 20);
-        void Draw_character()//绘制角色的图像
+        public Bitmap Platform_body = new Bitmap((int)width, (int)height);
+        void Draw_platform()//绘制图像
         {
             using (Graphics g = Graphics.FromImage(Platform_body))
             {
@@ -25,7 +25,7 @@ namespace game_test.Item
         {
             position = new Vector2(X, Y);
             Collider = new Collider(position, width, height);
-            Draw_character();
+            Draw_platform();
         }
     }
 }

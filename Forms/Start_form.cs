@@ -50,7 +50,7 @@ namespace game_test
                     MessageBox.Show("无输入，使用默认角色创建");
                     Character character = new Character();
                     Hero = character;
-                    Hero.Show_character_info();
+                    //Hero.Show_character_info();
                     Start_game();
                     return;
                 }

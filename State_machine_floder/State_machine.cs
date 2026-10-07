@@ -118,7 +118,7 @@ namespace game_test.State_machine_floder
                 timer = new System.Threading.Timer((e) =>
                             {
                                 current_state?.Update();
-                            }, null, 0, 1000 / 30); // 30帧采样率
+                            }, null, 0, 1000 / 45); // 45帧采样率
             });
             thread.IsBackground = true;
             thread.Start();

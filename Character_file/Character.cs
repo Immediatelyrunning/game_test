@@ -25,6 +25,9 @@ namespace game_test.Character_file
         /// 这是检测平台碰撞区域的右下角
         /// </summary>
         public Vector2 Check_collider_right => new Vector2(Position.X + Width + 300, Position.Y + Height);
+        /// <summary>
+        /// 角色坐标，采用世界坐标
+        /// </summary>
         public Vector2 Position { get; set; } = new Vector2(0, 0);//角色位置
         public Collider Collider
         {
