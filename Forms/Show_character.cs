@@ -43,6 +43,7 @@ namespace game_test
                 }
                 if (block!=null)
                 {
+                    block = Hero.form.map_creator_and_manager.Get_where_block(Hero.Position);
                     label.Text +=$"\n角色所在区块{Hero.form.map_creator_and_manager.blocks.Values.ToList().IndexOf(block)}";
                 }
             };

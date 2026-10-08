@@ -12,7 +12,7 @@ namespace game_test.Map
         /// <summary>
         /// 区块左上角的点
         /// </summary>
-        public Vector2 Point_upleft;
+        public Vector2 Point_upleft=>new(Index.X*x,Index.Y*y);
         /// <summary>
         /// 区块右下角的点
         /// </summary>
@@ -33,7 +33,7 @@ namespace game_test.Map
             if (Loaded) return;
             // 用索引做种子：确定性生成，来回走地形不变
             var random = new Random(HashCode.Combine(Index.X, Index.Y));
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 20; i++)
             {
                 platforms.Add(new Platform(
                                     ((float)random.NextDouble() * x) + Point_upleft.X,

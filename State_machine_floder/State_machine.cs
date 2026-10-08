@@ -1,5 +1,6 @@
 ﻿using game_test.Character_file;
 using game_test.Item;
+using game_test.Map;
 using System.Numerics;
 namespace game_test.State_machine_floder
 {
@@ -11,6 +12,7 @@ namespace game_test.State_machine_floder
         List<Platform> platforms => Hero.form.platforms;//获取窗体中的平台列表
         public Platform platform_around => Hero.What_platform_around(platforms);//周围的平台
         public Character Hero => state_machine.Hero;
+        public Map_creator_and_manager Map => Hero.form.map_creator_and_manager;
         public string Name { get; set; }
         State_machine state_machine { get; set; }
         public State(State_machine state_Machine, string name)
@@ -26,7 +28,40 @@ namespace game_test.State_machine_floder
         {
             Auto_change_state();
             Settling_basic_effects();
+            Check_platform_collision();
+            Out_of_map();
             Gravity_character();
+        }
+        void Out_of_map()//防止角色超出边界
+        {
+            if (Hero.Position.X < 0)
+            {
+                Hero.Position = new Vector2(0, Hero.Position.Y);
+                Hero.Velocity = new Vector2(0, Hero.Velocity.Y);
+            }
+            if (Hero.Position.X>=Map.map_size.X-15)
+            {
+                Hero.Position = new Vector2(Map.map_size.X-15, Hero.Position.Y);
+                Hero.Velocity = new Vector2(0, Hero.Velocity.Y);
+            }
+            if (Hero.Position.Y<=15)
+            {
+                Hero.Position = new(Hero.Position.X,15);
+            }
+        }
+        void Check_platform_collision()//检测角色与平台的碰撞
+        {
+            bool Is_paltform_around = platform_around == null;
+            if (!Is_paltform_around)//只有角色周围有平台时才检测
+            {
+                //MessageBox.Show("有平台");
+                if (Hero.Collider.IsColliding(platform_around.Collider))
+                {
+                    // 处理碰撞逻辑，例如停止角色的下落，调整位置等
+                    Hero.Position = new Vector2(Hero.Position.X, platform_around.position.Y - Character.Height);
+                    Hero.Velocity = new Vector2(Hero.Velocity.X, 0); // 停止垂直速度
+                }
+            }
         }
         void Gravity_character()//重力作用于角色
         {

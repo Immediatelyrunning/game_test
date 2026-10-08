@@ -7,7 +7,6 @@ namespace game_test.Map
     /// </summary>
     internal class Map_creator_and_manager
     {
-        Vector2 Character_position=>Form.Hero.Position;
         Play Form;
         /// <summary>
         /// 地图宽度
@@ -21,7 +20,7 @@ namespace game_test.Map
         /// 地图中心,这才是(0,0)参考点
         /// </summary>
         Vector2 map_center=new(0f,0f);
-        int[,] map_data;
+        public Vector2 map_size = new(0,0);
         public Map_creator_and_manager(Play form)
         {
             Form = form;
@@ -35,7 +34,6 @@ namespace game_test.Map
         {
             map_width_block = width;
             map_height_block = height;
-            map_data = new int[width, height];
         }
         /*
         /// <summary>
@@ -61,6 +59,11 @@ namespace game_test.Map
             return platforms;
         }
         */
+        /// <summary>
+        /// 根据坐标获得区块索引
+        /// </summary>
+        /// <param name="p">世界坐标</param>
+        /// <returns></returns>
         public static (int X, int Y) Block_index(Vector2 p) => ((int)Math.Floor(p.X / Block.x), (int)Math.Floor(p.Y / Block.y));               
         /// <summary>
         /// 区块管理，区块索引
@@ -75,10 +78,11 @@ namespace game_test.Map
                 {
                     Vector2 point = new Vector2(x * Block.x, y * Block.y);
                     Vector2 size = new Vector2(Block.x, Block.y);
-                    Block block = new Block(Block_index(point).X,Block_index(point).Y);
-                    blocks.Add(Block_index(point), block);
+                    Block block = new Block(x,y);
+                    blocks.Add((x,y), block);
                 }
             }
+            map_size = new(Block.x * map_width_block, Block.y * map_height_block);
         }
         /// <summary>
         /// 获取点所在的区块

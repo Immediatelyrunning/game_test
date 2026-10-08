@@ -1,4 +1,5 @@
 ﻿using game_test.Character_file;
+using game_test.Event;
 using game_test.Item;
 using game_test.Map;
 using System.Numerics;
@@ -6,6 +7,7 @@ namespace game_test
 {
     public partial class Play : Form
     {
+        Block_changed_event block_Changed = new();
         internal Map_creator_and_manager map_creator_and_manager;
         bool Is_paltform_around = false;//是否平台在角色周围
         Platform platform_around => Hero.What_platform_around(platforms);//周围的平台
@@ -22,16 +24,6 @@ namespace game_test
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
          ControlStyles.OptimizedDoubleBuffer, true);
-            //用新线程创建地图生成器和平台，防止界面卡顿
-            Load_started += (sender, e) =>
-            {
-                //MessageBox.Show("地图生成中...");
-                map_creator_and_manager = new Map_creator_and_manager(this);
-                map_creator_and_manager.Create_blocks();
-                platforms = map_creator_and_manager.Get_where_block(Hero.Position).platforms;
-                //MessageBox.Show($"是否正确生成区块{map_creator_and_manager.Get_where_block(Hero.Position)!=null}");
-                //MessageBox.Show($"是否有平台{platforms!=null}");
-            };
             //Character_test();
         }
         void Out_of_bounds()//防止角色超出边界
@@ -57,8 +49,9 @@ namespace game_test
             //Move_character();
             Draw_character();
             //Gravity_character();
-            Out_of_bounds();
-            Check_platform_collision();
+            block_Changed.Block = map_creator_and_manager.Get_where_block(Hero.Position);
+            //Out_of_bounds();
+            //Check_platform_collision();
         }
         void Check_platform_collision()//检测角色与平台的碰撞
         {
@@ -162,6 +155,9 @@ namespace game_test
         public static EventHandler Load_started;
         void Play_load(object sender, EventArgs e)
         {
+            map_creator_and_manager = new Map_creator_and_manager(this);
+            map_creator_and_manager.Create_blocks();
+            platforms = map_creator_and_manager.Get_where_block(Hero.Position).platforms;
             //Tips();
             //Create_platform();
             this.Text = $"游戏中 - 角色 {Hero.Name}";
@@ -175,8 +171,8 @@ namespace game_test
             Timer.Start();
 
             Load_finished?.Invoke(this, EventArgs.Empty);//触发加载完成事件
-
-            Draw_platforms();
+            block_Changed.Block_changed +=(sender,e)=> Draw_platforms();
+            //MessageBox.Show($"地图尺寸{map_creator_and_manager.map_size}");
         }
         void Tips()
         {
@@ -205,6 +201,9 @@ namespace game_test
         }
         void Draw_platforms()
         {
+            this.Controls.Clear();
+            map_creator_and_manager.Get_where_block(Hero.Position).Load();
+            platforms = map_creator_and_manager.Get_where_block(Hero.Position).platforms;
             foreach (var platform in platforms)
             {
                 PictureBox platformBox = new PictureBox()
@@ -213,8 +212,10 @@ namespace game_test
                     Image = platform.Platform_body,
                     Location = new Point((int)platform.position.X, (int)platform.position.Y)
                 };
+                //MessageBox.Show(platformBox.Location.ToString());
                 this.Controls.Add(platformBox);
             }
+            //map_creator_and_manager.Get_where_block(Hero.Position).Unload();
         }
     }
 }
