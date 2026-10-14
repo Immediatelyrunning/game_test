@@ -86,10 +86,11 @@ namespace game_test.Map
         }
         /// <summary>
         /// 获取点所在的区块
+        /// 如果找不到就使用默认区块(0,0)
         /// </summary>
         /// <param name="point">世界坐标</param>
         /// <returns>该点所在的区块</returns>
-        public Block? Get_where_block(Vector2 point) => blocks.TryGetValue(Block_index(point), out var block) ? block : null;
+        public Block Get_where_block(Vector2 point) => blocks.TryGetValue(Block_index(point), out var block) ? block :blocks.GetValueOrDefault((0,0));
         /// <summary>
         /// 获取窗口在世界的位置
         /// </summary>

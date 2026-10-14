@@ -11,11 +11,13 @@ namespace game_test.State_machine_floder
         {
             // 在空中状态下的逻辑
             In_air();
+            Change_state_to();
             base.Update();
+            
         }
         public void Change_state_to()
         {
-            if (Hero.Is_character_on_ground() || platform_around != null)
+            if (Is_colliding||Hero.Is_character_on_ground())
             {
                 Change_state("Move_state");
             }
@@ -31,7 +33,7 @@ namespace game_test.State_machine_floder
                 }
                 else
                 {
-                    velocity.X -= Hero.acceleration * 0.4f; // 在空中时
+                    velocity.X -= Hero.acceleration * 0.5f; // 在空中时
                     Hero.Velocity += velocity;
                 }
             }
@@ -43,7 +45,7 @@ namespace game_test.State_machine_floder
                 }
                 else
                 {
-                    velocity.X += Hero.acceleration * 0.4f; // 在空中时
+                    velocity.X += Hero.acceleration * 0.5f; // 在空中时
                     Hero.Velocity += velocity;
                 }
             }

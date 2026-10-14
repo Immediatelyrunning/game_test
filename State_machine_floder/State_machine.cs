@@ -9,12 +9,14 @@ namespace game_test.State_machine_floder
     /// </summary>
     class State
     {
-        List<Platform> platforms => Hero.form.platforms;//获取窗体中的平台列表
-        public Platform platform_around => Hero.What_platform_around(platforms);//周围的平台
+        //public Platform collider_around => Hero.What_platform_around(platforms);//周围的平台
         public Character Hero => state_machine.Hero;
+        public Collider collider_around => Hero.Nearest_collider;
+        public bool Is_colliding => Hero.Is_colliding(Map.Get_where_block(Hero.Position));
         public Map_creator_and_manager Map => Hero.form.map_creator_and_manager;
         public string Name { get; set; }
         State_machine state_machine { get; set; }
+        public string Now_state => state_machine.current_state.Name;
         public State(State_machine state_Machine, string name)
         {
             state_machine = state_Machine;
@@ -26,7 +28,6 @@ namespace game_test.State_machine_floder
         /// </summary>
         public virtual void Update()
         {
-            Auto_change_state();
             Settling_basic_effects();
             Check_platform_collision();
             Out_of_map();
@@ -39,28 +40,23 @@ namespace game_test.State_machine_floder
                 Hero.Position = new Vector2(0, Hero.Position.Y);
                 Hero.Velocity = new Vector2(0, Hero.Velocity.Y);
             }
-            if (Hero.Position.X>=Map.map_size.X-15)
+            if (Hero.Position.X >= Map.map_size.X - 15)
             {
-                Hero.Position = new Vector2(Map.map_size.X-15, Hero.Position.Y);
+                Hero.Position = new Vector2(Map.map_size.X - 15, Hero.Position.Y);
                 Hero.Velocity = new Vector2(0, Hero.Velocity.Y);
             }
-            if (Hero.Position.Y<=15)
+            if (Hero.Position.Y <= 15)
             {
-                Hero.Position = new(Hero.Position.X,15);
+                Hero.Position = new(Hero.Position.X, 15);
             }
         }
         void Check_platform_collision()//检测角色与平台的碰撞
         {
-            bool Is_paltform_around = platform_around == null;
-            if (!Is_paltform_around)//只有角色周围有平台时才检测
+            if (Is_colliding)
             {
-                //MessageBox.Show("有平台");
-                if (Hero.Collider.IsColliding(platform_around.Collider))
-                {
-                    // 处理碰撞逻辑，例如停止角色的下落，调整位置等
-                    Hero.Position = new Vector2(Hero.Position.X, platform_around.position.Y - Character.Height);
-                    Hero.Velocity = new Vector2(Hero.Velocity.X, 0); // 停止垂直速度
-                }
+                // 处理碰撞逻辑，例如停止角色的下落，调整位置等
+                Hero.Position = new Vector2(Hero.Position.X, collider_around.Point_upleft.Y - Character.Height);
+                Hero.Velocity = new Vector2(Hero.Velocity.X, 0); // 停止垂直速度
             }
         }
         void Gravity_character()//重力作用于角色
@@ -83,29 +79,22 @@ namespace game_test.State_machine_floder
         /// </summary>
         void Settling_basic_effects()
         {
-            if (Hero.Position.Y < Hero.form.ClientSize.Height - Character.Height - 15)//在空中时
+            if (Now_state.Equals("In_air_state"))//在空中时
             {
-                Hero.Position += Hero.Velocity;//先更新位置，再应用摩擦力和重力
-                if (platform_around != null)
+                if (Is_colliding)
                 {
-                    Hero.Velocity = new Vector2(Hero.Velocity.X * platform_around.Collider.friction, Hero.Velocity.Y ); // 在空中时，水平速度*平台摩擦力，垂直速度+重力
+                    Hero.Velocity = new Vector2(Hero.Velocity.X * collider_around.friction, Hero.Velocity.Y); // 在空中时，水平速度*平台摩擦力，垂直速度+重力
                 }
                 else
                 {
                     Hero.Velocity = new Vector2(Hero.Velocity.X * 0.95f, Hero.Velocity.Y); // 在空中时，水平速度*0.95，模拟空气阻力
                 }
+                Hero.Position += Hero.Velocity;//应用摩擦力和重力
             }
             else
             {
                 Hero.Position += Hero.Velocity;//先更新位置，再应用摩擦力和重力
                 Hero.Velocity = new Vector2(Hero.Velocity.X * Hero.friction, Hero.Velocity.Y); // 如果没有按下A或D键，则应用摩擦力减小水平速度
-            }
-        }
-        void Auto_change_state()
-        {
-            if (Hero.Is_character_on_ground() || platform_around != null)
-            {
-                Change_state("Move_state");
             }
         }
         /// <summary>
@@ -136,8 +125,10 @@ namespace game_test.State_machine_floder
         /// <param name="character"></param>
         public State_machine(Character character)
         {
+            states.Add(new Basic_state(this));
             states.Add(new Move_state(this));
             states.Add(new In_air_state(this));
+            //基础
             current_state = states[0];
             Get_character(character);
             Play.Load_finished += (sender, e) =>
@@ -153,9 +144,10 @@ namespace game_test.State_machine_floder
                 timer = new System.Threading.Timer((e) =>
                             {
                                 current_state?.Update();
-                            }, null, 0, 1000 / 45); // 45帧采样率
+                            }, null, 0, 1000 / 60); // 60帧采样率
             });
             thread.IsBackground = true;
+            thread.Name = "状态机";
             thread.Start();
         }
         public void Change_state(string Name)

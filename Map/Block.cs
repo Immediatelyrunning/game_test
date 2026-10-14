@@ -6,13 +6,17 @@ namespace game_test.Map
     /// 区块，加载的最小单位
     /// 可用多线程进行更新
     /// </summary>
-    internal class Block
+    public class Block
     {
         public List<Platform> platforms = new List<Platform>();
         /// <summary>
+        /// 储存着该区块内的方块
+        /// </summary>
+        public Dictionary<Vector2, Base_block> blocks = new();
+        /// <summary>
         /// 区块左上角的点
         /// </summary>
-        public Vector2 Point_upleft=>new(Index.X*x,Index.Y*y);
+        public Vector2 Point_upleft => new(Index.X * x, Index.Y * y);
         /// <summary>
         /// 区块右下角的点
         /// </summary>
@@ -35,13 +39,17 @@ namespace game_test.Map
             var random = new Random(HashCode.Combine(Index.X, Index.Y));
             for (int i = 0; i < 20; i++)
             {
-                platforms.Add(new Platform(
-                                    ((float)random.NextDouble() * x) + Point_upleft.X,
-                                    ((float)random.NextDouble() * y) + Point_upleft.Y));
+                float X = (float)random.NextDouble() * x + Point_upleft.X;
+                float Y = (float)random.NextDouble() * y + Point_upleft.Y;
+                Base_block block = new(X, Y);
+                if (!blocks.TryAdd(new(X,Y),block))
+                {
+                    throw new Exception($"创建方块{(X,Y)}失败");
+                }
             }
             Loaded = true;
         }
-        public void Unload() { platforms.Clear(); Loaded = false; }
+        public void Unload() { blocks.Clear(); Loaded = false; }
         public bool Intersects(float l, float t, float r, float b)
             => Point_upleft.X < r && Point_downright.X > l
             && Point_upleft.Y < b && Point_downright.Y > t;

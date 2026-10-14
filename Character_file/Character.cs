@@ -1,5 +1,7 @@
 ﻿using game_test.Item;
+using game_test.Map;
 using game_test.State_machine_floder;
+using KdTree;
 using System.Numerics;
 namespace game_test.Character_file
 {
@@ -9,38 +11,47 @@ namespace game_test.Character_file
         /// <summary>
         /// 摩擦乘数每帧结算到速度上，值越小摩擦力越大，范围0-1
         /// </summary>
-        public float friction = 0.7f;
-        public float acceleration = 7f; // 加速度，值越大角色加速越快
-        public float gravity = 1.5f;//重力加速度
+        public float Max_speed { get; } = 20;//角色最大移动速度
+        public float friction = 0.75f;
+        public float acceleration = 5f; // 加速度，值越大角色加速越快
+        public float gravity = 1f;//重力加速度
         public Play form { get; set; }//角色所在的窗体
         public string Name { get; set; }
         public double Health { get; set; }
         public double Max_health => 100 + (Level * 20);//角色最大生命值
         public int Level { get; set; }
+        public static float Collider_rectangle_width = 100f;
+        public static float Collider_rectangle_height = 100f;
         /// <summary>
-        /// 这是检测平台碰撞区域的左上角（这片区域用于检测角色与平台的碰撞历遍）
+        /// 检测碰撞的矩形区域
         /// </summary>
-        public Vector2 Check_collider_left => new Vector2(Position.X - 300, Position.Y);
-        /// <summary>
-        /// 这是检测平台碰撞区域的右下角
-        /// </summary>
-        public Vector2 Check_collider_right => new Vector2(Position.X + Width + 300, Position.Y + Height);
+        RectangleF Collider_check_rectangle
+        {
+            get
+            {
+                field.Location = new(Position.X+(Width-Collider_rectangle_width)/2,Position.Y-(Collider_rectangle_height-Height)/2);
+                return field;
+            }
+        } = new(0,0,Width+Collider_rectangle_width,Height+Collider_rectangle_height);
         /// <summary>
         /// 角色坐标，采用世界坐标
         /// </summary>
-        public Vector2 Position { get; set; } = new Vector2(0, 0);//角色位置
+        public Vector2 Position { get; set; } = new Vector2(100, 100);//角色位置
+        /// <summary>
+        /// 角色碰撞箱
+        /// </summary>
         public Collider Collider
         {
             get
             {
-                return field.Collider_moved(Position);
+                return field.Collider_moved_rectangle(Position);
             }
         } = new Collider(new Vector2(0, 0), Width, Height);
         /// <summary>
         /// 这是角色的速度，X轴为水平速度，Y轴为垂直速度
         /// </summary>
         public Vector2 Velocity { get; set; } = new Vector2(0, 0);//角色速度
-        public float Max_speed { get; } = 25;//角色最大移动速度
+        
         public int Experience_to_get_up => 100 + (Level * 50);//角色升级所需经验值
         public bool Is_character_on_ground()
         {
@@ -125,8 +136,10 @@ namespace game_test.Character_file
                 return;
             }
         }
+        /*
         /// <summary>
         /// 此函数检测玩家周围是否有平台（我可不想每一帧都吧全图的平台都历遍一遍）
+        /// 这是碰撞箱最终获取的函数
         /// </summary>
         /// <param name="platforms">平台的集合</param>
         /// <returns>返回该平台</returns>
@@ -142,7 +155,52 @@ namespace game_test.Character_file
                     return platform;
                 }
             }
-            return null;
+            return platforms[0];
+        }*/
+        /// <summary>
+        /// 获得角色最近的碰撞箱
+        /// </summary>
+        /// <param name="block">角色所在区块</param>
+        /// <returns>最近的碰撞箱</returns>
+        internal Collider What_collider_nearest(Block block)
+        {
+            Base_block nearest = null;
+            foreach (var item in block.blocks)
+            {
+                float dx = item.Key.X - Position.X;
+                float dy = item.Key.Y - Position.Y;
+                float sqrDist = dx * dx + dy * dy; // 不开方，速度快一倍多
+                
+                float minSqrDist = float.MaxValue;
+                if (sqrDist < minSqrDist)
+                {
+                    minSqrDist = sqrDist;
+                    nearest = item.Value;
+                }
+            }
+            if (nearest==null)throw new Exception("没有访问到方块");
+            return nearest.Collider;
+        }
+        /// <summary>
+        /// 角色最近的碰撞箱
+        /// </summary>
+        public Collider Nearest_collider;
+        /// <summary>
+        /// 检测区块内的碰撞箱是否与角色重叠
+        /// </summary>
+        /// <param name="block">角色所在区块</param>
+        /// <returns></returns>
+        public bool Is_colliding(Block block)
+        {
+            foreach (var item in block.blocks)
+            {
+                if (this.Collider.Collider_rectangle.IntersectsWith(item.Value.Collider.Collider_rectangle))
+                {
+                    Nearest_collider = item.Value.Collider;
+                    return true;
+                }
+            }
+            return false;
         }
         public void Show_character_info()
         {

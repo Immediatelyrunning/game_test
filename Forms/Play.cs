@@ -7,20 +7,27 @@ namespace game_test
 {
     public partial class Play : Form
     {
+        
         Block_changed_event block_Changed = new();
         internal Map_creator_and_manager map_creator_and_manager;
         bool Is_paltform_around = false;//是否平台在角色周围
-        Platform platform_around => Hero.What_platform_around(platforms);//周围的平台
+        //Platform platform_around => Hero.What_platform_around(platforms);//周围的平台
         //float friction = 0.8f; // 摩擦系数，值越小摩擦力越大
         //float acceleration = 7f; // 加速度，值越大角色加速越快
         //float gravity = 1.5f;//重力加速度
         public Character Hero;
         System.Windows.Forms.Timer Timer { get; set; }//游戏循环计时器
-        public List<Platform> platforms;
-        public Play(Character character)
+        internal Dictionary<Vector2,Base_block> blocks;
+        public Play(string name)
         {
-            Hero = character;
+            Hero = name.Equals(string.Empty) ? new() : new(name);
             Hero.form = this;
+            map_creator_and_manager = new Map_creator_and_manager(this);
+            block_Changed.Block_changed += (sender, e) => block_Changed.Block.Load();
+            map_creator_and_manager.Create_blocks();
+            map_creator_and_manager.Get_where_block(Hero.Position).Load();
+            blocks = map_creator_and_manager.Get_where_block(Hero.Position).blocks;
+            
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
          ControlStyles.OptimizedDoubleBuffer, true);
@@ -53,6 +60,7 @@ namespace game_test
             //Out_of_bounds();
             //Check_platform_collision();
         }
+        /*
         void Check_platform_collision()//检测角色与平台的碰撞
         {
             Is_paltform_around = platform_around == null;
@@ -66,6 +74,7 @@ namespace game_test
                 }
             }
         }
+        */
         /*void Move_character()
         {
             Vector2 velocity = new Vector2(0, 0);
@@ -155,9 +164,7 @@ namespace game_test
         public static EventHandler Load_started;
         void Play_load(object sender, EventArgs e)
         {
-            map_creator_and_manager = new Map_creator_and_manager(this);
-            map_creator_and_manager.Create_blocks();
-            platforms = map_creator_and_manager.Get_where_block(Hero.Position).platforms;
+            
             //Tips();
             //Create_platform();
             this.Text = $"游戏中 - 角色 {Hero.Name}";
@@ -171,7 +178,7 @@ namespace game_test
             Timer.Start();
 
             Load_finished?.Invoke(this, EventArgs.Empty);//触发加载完成事件
-            block_Changed.Block_changed +=(sender,e)=> Draw_platforms();
+            block_Changed.Block_changed +=(sender,e)=> Draw_block();
             //MessageBox.Show($"地图尺寸{map_creator_and_manager.map_size}");
         }
         void Tips()
@@ -182,35 +189,19 @@ namespace game_test
         /// <summary>
         /// 随机创建平台
         /// </summary>
-        void Create_platform()
-        {
-            Rectangle workArea = Screen.PrimaryScreen.WorkingArea;
-            float Window_width = workArea.Width; // 平台宽度
-            float Window_height = workArea.Height; // 平台高度
-            int num = (int)(Window_height / 150);//生成平台的数量
-            //MessageBox.Show($"生成平台数量{Window_height},{Window_width}");
-            Random random = new();
-            for (; num > 0; num--)
-            {
-                float X = (float)random.NextDouble() * Window_width;
-                float Y = Window_height * (num / (Window_height / 150));
-                Platform platform = new(X, Y);
-                //MessageBox.Show($"平台坐标{platform.position.X},{platform.position.Y}");
-                platforms.Add(platform);
-            }
-        }
-        void Draw_platforms()
+
+        void Draw_block()
         {
             this.Controls.Clear();
             map_creator_and_manager.Get_where_block(Hero.Position).Load();
-            platforms = map_creator_and_manager.Get_where_block(Hero.Position).platforms;
-            foreach (var platform in platforms)
+            blocks = map_creator_and_manager.Get_where_block(Hero.Position).blocks;
+            foreach (var platform in blocks)
             {
                 PictureBox platformBox = new PictureBox()
                 {
-                    Size = new Size((int)platform.Collider.buttom, (int)platform.Collider.right),
-                    Image = platform.Platform_body,
-                    Location = new Point((int)platform.position.X, (int)platform.position.Y)
+                    Size = new Size((int)platform.Value.Collider.buttom, (int)platform.Value.Collider.right),
+                    Image = platform.Value.body_pic,
+                    Location = new Point((int)platform.Value.position.X, (int)platform.Value.position.Y)
                 };
                 //MessageBox.Show(platformBox.Location.ToString());
                 this.Controls.Add(platformBox);

@@ -4,7 +4,6 @@ namespace game_test.State_machine_floder
 {
     internal class Move_state : State
     {
-
         public Move_state(State_machine state_Machine) : base(state_Machine, "Move_state")
         {
         }
@@ -16,7 +15,7 @@ namespace game_test.State_machine_floder
         }
         void Change_state_to()
         {
-            if (!Hero.Is_character_on_ground() && platform_around == null)
+            if (!Is_colliding&&!Hero.Is_character_on_ground())
             {
                 Change_state("In_air_state");
             }
@@ -55,9 +54,9 @@ namespace game_test.State_machine_floder
                 {
                     Hero.Velocity += velocity;
                 }
-                if (platform_around != null)//只有角色周围有平台时才检测角色是否在上面
+                if (collider_around != null)//只有角色周围有平台时才检测角色是否在上面
                 {
-                    if (Hero.Collider.IsColliding(platform_around.Collider))
+                    if (Is_colliding)
                     {
                         Hero.Velocity += velocity;
                     }

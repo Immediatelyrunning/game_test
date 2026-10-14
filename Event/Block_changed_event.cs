@@ -10,7 +10,7 @@ namespace game_test.Event
     internal class Block_changed_event
     {
         public EventHandler Block_changed;
-        Block block_real;
+        Block block_real=new(0,0);
         public Block Block
         {
             get
@@ -19,7 +19,11 @@ namespace game_test.Event
             }
             set
             {
-                if (!value.Equals(block_real))
+                if (value==null)
+                {
+                    return;
+                }
+                else if (!value.Equals(block_real))
                 {
                     Block_changed.Invoke(this,EventArgs.Empty);
                     block_real = value;
